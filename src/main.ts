@@ -13,6 +13,7 @@ let redoThickness: number[] = [];
 
 const size = 256;
 const app = document.querySelector<HTMLDivElement>("#app")!;
+
 const canvas = document.getElementById("canvas");
 canvas.style.cursor = "none";
 const ctx = canvas.getContext("2d");
@@ -28,11 +29,6 @@ const undoButton = document.createElement("button");
 const redoButton = document.createElement("button");
 const thinButton = document.createElement("button");
 const thickButton = document.createElement("button");
-const emoteButton1 = document.createElement("button");
-const emoteButton2 = document.createElement("button");
-const emoteButton3 = document.createElement("button");
-const customButton = document.createElement("button");
-const exportButton = document.createElement("button");
 clearButton.textContent = "Clear";
 app.append(clearButton);
 undoButton.textContent = "Undo";
@@ -43,16 +39,30 @@ thinButton.textContent = "Thin";
 app.append(thinButton);
 thickButton.textContent = "Thick";
 app.append(thickButton);
-emoteButton1.textContent = "🌕";
-app.append(emoteButton1);
-emoteButton2.textContent = "🍤";
-app.append(emoteButton2);
-emoteButton3.textContent = "☄️";
-app.append(emoteButton3);
+
+function createEmoteButton(text: string, num: number){
+    const button= document.createElement("button");
+    button.textContent = text;
+    app.append(button);
+    button.addEventListener("click", () => {
+        if(penTool.option != num){
+            penTool.option = num;
+        }else{
+            penTool.option = 0;
+        }
+        dispatchEvent(toolMoved);
+    })
+}
+createEmoteButton("🌕", 1);
+createEmoteButton("🍤", 2);
+createEmoteButton("☄️", 3);
+const customButton = document.createElement("button");
+const exportButton = document.createElement("button");
 customButton.textContent = custom;
 app.append(customButton);
 exportButton.textContent = "export";
 app.append(exportButton);
+
 
 const changEvent = new Event("drawing-changed");
 const toolMoved = new Event("tool-moved");
@@ -143,33 +153,6 @@ clearButton.addEventListener("click", () => {
     drawPositions = [];
     thickness = [];
     emojiSticker.emojiPositions = [[0,-2000],[0,-2000],[0,-2000],[0,-2000]];
-})
-
-emoteButton1.addEventListener("click", () => {
-    if(penTool.option != 1){
-        penTool.option = 1;
-    }else{
-        penTool.option = 0;
-    }
-    dispatchEvent(toolMoved);
-})
-
-emoteButton2.addEventListener("click", () => {
-    if(penTool.option != 2){
-        penTool.option = 2;
-    }else{
-        penTool.option = 0;
-    }
-    dispatchEvent(toolMoved);
-})
-
-emoteButton3.addEventListener("click", () => {
-    if(penTool.option != 3){
-        penTool.option = 3;
-    }else{
-        penTool.option = 0;
-    }
-    dispatchEvent(toolMoved);
 })
 
 customButton.addEventListener("click", () => {
@@ -306,5 +289,3 @@ globalThis.addEventListener("mouseup", (e) => {
         dispatchEvent(changEvent);
     }
 });
-
-  
