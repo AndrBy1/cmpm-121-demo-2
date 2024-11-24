@@ -142,6 +142,7 @@ clearButton.addEventListener("click", () => {
     ctx.fillRect(0, 0, size, size);
     drawPositions = [];
     thickness = [];
+    emojiSticker.emojiPositions = [[0,-2000],[0,-2000],[0,-2000],[0,-2000]];
 })
 
 emoteButton1.addEventListener("click", () => {
