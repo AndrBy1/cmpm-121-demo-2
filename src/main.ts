@@ -4,6 +4,7 @@ let isDraw = false;
 let thisLine = null;
 let currentThick = false;
 let colors: string[] = ["black", "red", "green", "yellow","orange", "magenta", "cyan", "white", "gray"];
+let emojis: string[] = ["🌕", "🍤", "☄️"];
 let colorIndex: number = 0;
 let custom = prompt("Custom sticker text","🧽");
 let drawPositions = [];
@@ -13,7 +14,7 @@ let redoPositions = [];
 let thickness: number[] = [];
 let redoThickness: number[] = [];
 
-const size = 256;
+let size = 256;
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
 const canvas = document.getElementById("canvas");
@@ -42,9 +43,9 @@ app.append(thinButton);
 thickButton.textContent = "Thick";
 app.append(thickButton);
 
-function createEmoteButton(text: string, num: number){
+function createEmoteButton(text: string[], num: number){
     const button= document.createElement("button");
-    button.textContent = text;
+    button.textContent = text[num - 1];
     app.append(button);
     button.addEventListener("click", () => {
         if(penTool.option != num){
@@ -55,12 +56,13 @@ function createEmoteButton(text: string, num: number){
         dispatchEvent(toolMoved);
     })
 }
-createEmoteButton("🌕", 1);
-createEmoteButton("🍤", 2);
-createEmoteButton("☄️", 3);
+createEmoteButton(emojis, 1);
+createEmoteButton(emojis, 2);
+createEmoteButton(emojis, 3);
 const customButton = document.createElement("button");
 const exportButton = document.createElement("button");
 customButton.textContent = custom;
+emojis.push(custom!);
 app.append(customButton);
 exportButton.textContent = "export";
 app.append(exportButton);
@@ -82,6 +84,7 @@ interface displayObj {
 }
 
 interface StickerObj{
+
     emojiPositions: number[][];
     drag(changeX: number, changeY: number): void;
 }
@@ -98,15 +101,7 @@ const emojiSticker: StickerObj = {
     emojiPositions: [[0,-2000],[0,-2000],[0,-2000],[0,-2000]],
     drag(changeX, changeY){
         ctx.font = "32px monospace";
-        if(penTool.option == 1){
-            this.emojiPositions[0] = [changeX - 18, changeY + 10];
-        }else if (penTool.option == 2){
-            this.emojiPositions[1] = [changeX - 18, changeY + 10];
-        }else if (penTool.option == 3){
-            this.emojiPositions[2] = [changeX - 18, changeY + 10];
-        }else if (penTool.option == 4){
-            this.emojiPositions[3] = [changeX - 18, changeY + 10];
-        }
+        this.emojiPositions[penTool.option - 1] = [changeX - 18, changeY + 10];
     }
 }
 
@@ -122,14 +117,8 @@ const penTool: selectTool = {
         redraw(ctx);
         ctx.beginPath();
         ctx.font = "32px monospace";
-        if(this.option == 1){
-            ctx.fillText("🌕", penTool.x - 18, penTool.y + 10);
-        }else if (this.option == 2){
-            ctx.fillText("🍤", penTool.x - 18, penTool.y + 10);
-        }else if (this.option == 3){
-            ctx.fillText("☄️", penTool.x - 18, penTool.y + 10);
-        }else if (this.option == 4){
-            ctx.fillText(custom, penTool.x - 18, penTool.y + 10);
+        if(this.option > 0){
+            ctx.fillText(emojis[this.option - 1], penTool.x - 18, penTool.y + 10);
         }else{
             ctx.arc(penTool.x, penTool.y, 1, 0, 2 * Math.PI);
         }
@@ -170,14 +159,15 @@ customButton.addEventListener("click", () => {
 })
 
 exportButton.addEventListener("click", () => {
+    size *= 4;
     const tempCanvas = document.getElementById("canvas");
     const tempCtx = tempCanvas.getContext("2d");
     redraw(tempCtx);
-    tempCtx.scale(4*size, 4*size);
     const anchor = document.createElement('a');
     anchor.href = tempCanvas.toDataURL("image/png");
     anchor.download = 'drawing.png';
     anchor.click();
+    size /= 4;
 })
 
 rotation.addEventListener("input", (e) =>{
@@ -230,6 +220,7 @@ redoButton.addEventListener("click", () => {
 function redraw(ctxParam: CanvasRenderingContext2D ) {
     ctxParam.clearRect(0, 0, size, size);
     ctxParam.fillRect(0,0,size, size);
+    console.log("size: " + size);
     let n = 0;
     
     if(colorIndex >= colors.length){
