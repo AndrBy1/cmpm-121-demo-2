@@ -7,6 +7,8 @@ let colors: string[] = ["black", "red", "green", "yellow","orange", "magenta", "
 let colorIndex: number = 0;
 let custom = prompt("Custom sticker text","🧽");
 let drawPositions = [];
+let drawColors: number[] = [];
+let redoColors:number[] = [];
 let redoPositions = [];
 let thickness: number[] = [];
 let redoThickness: number[] = [];
@@ -151,6 +153,9 @@ clearButton.addEventListener("click", () => {
     ctx.clearRect(0,0,size,size);
     ctx.fillRect(0, 0, size, size);
     drawPositions = [];
+    redoPositions = [];
+    drawColors = [];
+    redoColors = [];
     thickness = [];
     emojiSticker.emojiPositions = [[0,-2000],[0,-2000],[0,-2000],[0,-2000]];
 })
@@ -208,6 +213,7 @@ undoButton.addEventListener("click", () => {
     if (drawPositions.length > 0) {
         redoPositions.push(drawPositions.pop());
         redoThickness.push(thickness.pop());
+        redoColors.push(drawColors.pop());
         dispatchEvent(changEvent);
     }
 });
@@ -216,6 +222,7 @@ redoButton.addEventListener("click", () => {
     if (redoPositions.length > 0) {
         drawPositions.push(redoPositions.pop());
         thickness.push(redoThickness.pop());
+        drawColors.push(redoColors.pop());
         dispatchEvent(changEvent);
     }
 });
@@ -228,9 +235,9 @@ function redraw(ctxParam: CanvasRenderingContext2D ) {
     if(colorIndex >= colors.length){
         colorIndex = 0;
     }
-    ctxParam.strokeStyle = colors[colorIndex];
+    
     for (const line of drawPositions) {
-        
+        ctxParam.strokeStyle = colors[drawColors[n]];
         ctxParam.lineWidth = thickness[n + 1];
         if (line.length > 1) {
             ctxParam.beginPath();
@@ -262,11 +269,13 @@ canvas.addEventListener("mousedown", (e) => {
     if (penTool.option > 0){
         emojiSticker.drag(e.offsetX, e.offsetY);
     }
-    colorIndex++;
+    
     thisLine = [];
     redoPositions.splice(0, redoPositions.length);
     thisLine.push({x: e.offsetX, y: e.offsetY});
     drawPositions.push(thisLine);
+    drawColors.push(colorIndex);
+    colorIndex++;
     dispatchEvent(changEvent);
 });
 
