@@ -7,10 +7,10 @@ type pen = {pos: position[], color: number, thick: number};
 let isDraw = false;
 let thisLine: position[] = [];
 let currentThick = 1;
-let colors: string[] = ["black", "red", "green", "yellow","orange", "magenta", "cyan", "white", "gray"];
-let emojis: string[] = ["🌕", "🍤", "☄️"];
+const colors: string[] = ["black", "red", "green", "yellow","orange", "magenta", "cyan", "white", "gray"];
+const emojis: string[] = ["🌕", "🍤", "☄️"];
 let colorIndex: number = 0;
-let custom = prompt("Custom sticker text","🧽");
+const custom = prompt("Custom sticker text","🧽");
 let drawPositions:pen[] = [];
 //let drawColors: number[] = [];
 //let redoColors:number[] = [];
@@ -29,7 +29,7 @@ const header = document.createElement("h1");
 const degrees = document.querySelector("#degrees");
 const rotation = document.querySelector("#Rotation");
 rotation!.value = 0;
-degrees.textContent = rotation.value;
+degrees!.textContent = rotation!.value;
 
 const clearButton = document.createElement("button");
 const undoButton = document.createElement("button");
@@ -46,10 +46,11 @@ thinButton.textContent = "Thin";
 app.append(thinButton);
 thickButton.textContent = "Thick";
 app.append(thickButton);
+emojis.push(custom!);
 
-function createEmoteButton(text: string[], num: number){
+function createEmoteButton(num: number){
     const button= document.createElement("button");
-    button.textContent = text[num - 1];
+    button.textContent = emojis[num - 1];
     app.append(button);
     button.addEventListener("click", () => {
         if(penTool.option != num){
@@ -60,17 +61,13 @@ function createEmoteButton(text: string[], num: number){
         dispatchEvent(toolMoved);
     })
 }
-createEmoteButton(emojis, 1);
-createEmoteButton(emojis, 2);
-createEmoteButton(emojis, 3);
-const customButton = document.createElement("button");
+createEmoteButton(1);
+createEmoteButton(2);
+createEmoteButton(3);
+createEmoteButton(4);
 const exportButton = document.createElement("button");
-customButton.textContent = custom;
-emojis.push(custom!);
-app.append(customButton);
 exportButton.textContent = "export";
 app.append(exportButton);
-
 
 const changEvent = new Event("drawing-changed");
 const toolMoved = new Event("tool-moved");
@@ -156,39 +153,30 @@ clearButton.addEventListener("click", () => {
     emojiSticker.emojiRedos = [];
     })
 
-customButton.addEventListener("click", () => {
-    if(penTool.option != 4){
-        penTool.option = 4;
-    }else{
-        penTool.option = 0;
-    }
-    dispatchEvent(toolMoved);
-})
-
 exportButton.addEventListener("click", () => {
     size *= 4;
     const tempCanvas = document.getElementById("canvas");
-    const tempCtx = tempCanvas.getContext("2d");
+    const tempCtx = tempCanvas!.getContext("2d");
     redraw(tempCtx);
     const anchor = document.createElement('a');
-    anchor.href = tempCanvas.toDataURL("image/png");
+    anchor.href = tempCanvas!.toDataURL("image/png");
     anchor.download = 'drawing.png';
     anchor.click();
     size /= 4;
 })
 
-rotation.addEventListener("input", (e) =>{
-    degrees.textContent = e.target.value;
+rotation!.addEventListener("input", (e) =>{
+    degrees!.textContent = e.target!.value;
     if (penTool.option > 0){
-        canvas.addEventListener("mousedown", () => {
+        canvas!.addEventListener("mousedown", () => {
             ctx.translate(penTool.x, penTool.y);
-            ctx.rotate((e.target.value * Math.PI) / 180);
+            ctx.rotate((e.target!.value * Math.PI) / 180);
             ctx.translate(-penTool.x, -penTool.y);
         })
     }
 });
 
-canvas.addEventListener("mouseleave", () => {
+canvas!.addEventListener("mouseleave", () => {
     redraw(ctx);
 })
 
@@ -263,7 +251,7 @@ function redraw(ctxParam: CanvasRenderingContext2D ) {
     }
 }
 
-canvas.addEventListener("mousedown", (e) => {
+canvas!.addEventListener("mousedown", (e) => {
     dispatchEvent(toolMoved);
     penTool.x = e.offsetX;
     penTool.y = e.offsetY;
@@ -281,7 +269,7 @@ canvas.addEventListener("mousedown", (e) => {
     dispatchEvent(changEvent);
 });
 
-canvas.addEventListener("mousemove", (e) => {
+canvas!.addEventListener("mousemove", (e) => {
     penTool.x = e.offsetX;
     penTool.y = e.offsetY;
     
