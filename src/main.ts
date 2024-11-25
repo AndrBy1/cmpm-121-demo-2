@@ -12,11 +12,7 @@ const emojis: string[] = ["🌕", "🍤", "☄️"];
 let colorIndex: number = 0;
 const custom = prompt("Custom sticker text","🧽");
 let drawPositions:pen[] = [];
-//let drawColors: number[] = [];
-//let redoColors:number[] = [];
 let redoPositions:pen[] = [];
-//let thickness: number[] = [];
-//let redoThickness: number[] = [];
 
 let size = 256;
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -72,7 +68,6 @@ app.append(exportButton);
 const changEvent = new Event("drawing-changed");
 const toolMoved = new Event("tool-moved");
 
-//thickness.push(1);
 header.innerHTML = Title;
 
 ctx.fillStyle = "blue";
@@ -85,7 +80,6 @@ interface displayObj {
 }
 
 interface StickerObj{
-    //emojiType: number[]
     emojiList: emoji[];
     emojiRedos: emoji[];
     drag(changeX: number, changeY: number): void;
@@ -99,16 +93,12 @@ interface selectTool{
 }
 
 const emojiSticker: StickerObj = {
-    //emojiType: [],
     emojiList: [],
     emojiRedos: [],
     drag(changeX, changeY){
         ctx.font = "32px monospace";
         this.emojiList.push({x: changeX - 18, y: changeY + 10, e: penTool.option - 1});
-        //this.emojiType.push(penTool.option - 1);
         drawPositions.push({pos: [], color: 0, thick: 0});
-        //console.log("emoji pos: " + this.emojiList);
-        //this.emojiPositions[penTool.option - 1] = [changeX - 18, changeY + 10];
     }
 }
 
@@ -133,15 +123,11 @@ const penTool: selectTool = {
 thinButton.addEventListener("click", () => {
     currentThick = 1;
     penTool.option = 0;
-    console.log("thin button clicked");
-    console.log(JSON.stringify(drawPositions));
-    console.log(JSON.stringify(emojiSticker.emojiList));
 })
 
 thickButton.addEventListener("click", () => {
     currentThick = 4;
     penTool.option = 0;
-    console.log("thick button clicked");
 })
 
 clearButton.addEventListener("click", () => {
@@ -180,21 +166,11 @@ canvas!.addEventListener("mouseleave", () => {
     redraw(ctx);
 })
 
-globalThis.addEventListener("drawing-changed", () => {
-    redraw(ctx);
-})
-
-globalThis.addEventListener("tool-moved", () => {
-    ctx.lineWidth = currentThick;
-    penTool.moveCursor();
-})
-
 //functions borrowed from https://quant-paint.glitch.me/paint1.html 
 undoButton.addEventListener("click", () => {
     if (drawPositions.length > 0) {
         if ((drawPositions[drawPositions.length - 1].pos.length == 0)){
             const moveEmoji = emojiSticker.emojiList.pop()
-            console.log("moved emoji: " + JSON.stringify(moveEmoji));
             emojiSticker.emojiRedos.push(moveEmoji!);
         }
         redoPositions.push(drawPositions.pop()!);
@@ -206,7 +182,6 @@ redoButton.addEventListener("click", () => {
     if (redoPositions.length > 0) {
         if (redoPositions[redoPositions.length - 1].pos.length == 0){
             const moveEmoji = emojiSticker.emojiRedos.pop()
-            console.log("moved emoji: " + JSON.stringify(moveEmoji));
             emojiSticker.emojiList.push(moveEmoji!);
         }
         drawPositions.push(redoPositions.pop()!);
@@ -214,10 +189,18 @@ redoButton.addEventListener("click", () => {
     }
 });
 
+globalThis.addEventListener("drawing-changed", () => {
+    redraw(ctx);
+})
+
+globalThis.addEventListener("tool-moved", () => {
+    ctx.lineWidth = currentThick;
+    penTool.moveCursor();
+})
+
 function redraw(ctxParam: CanvasRenderingContext2D ) {
     ctxParam.clearRect(0, 0, size, size);
     ctxParam.fillRect(0,0,size, size);
-    //console.log("size: " + size);
     let lineNum = 0;
     let emojiNum = 0;
     
@@ -230,7 +213,6 @@ function redraw(ctxParam: CanvasRenderingContext2D ) {
         if(drawPositions[lineNum] != undefined){
             ctxParam.lineWidth = drawPositions[lineNum].thick;
         }
-        //console.log(JSON.stringify(line));
         if (line.pos.length > 1) {
             ctxParam.beginPath();
             const { x, y } = line.pos[0];
@@ -243,10 +225,7 @@ function redraw(ctxParam: CanvasRenderingContext2D ) {
       lineNum++;
     }
     for (const positions of emojiSticker.emojiList){
-        //console.log(JSON.stringify(positions));
-
         ctxParam.fillText(emojis[positions.e], positions.x, positions.y);
-        //console.log("emoji: " + emojis[positions.e]);
         emojiNum++;
     }
 }
@@ -264,7 +243,6 @@ canvas!.addEventListener("mousedown", (e) => {
         drawPositions.push({pos: thisLine, color: colorIndex, thick: currentThick});
     }
     redoPositions.splice(0, redoPositions.length);
-    //drawColors.push(colorIndex);
     colorIndex++;
     dispatchEvent(changEvent);
 });
