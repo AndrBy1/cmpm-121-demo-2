@@ -1,5 +1,7 @@
 import "./style.css";
 
+type emoji = {x: number, y: number, e: number};
+
 let isDraw = false;
 let thisLine = null;
 let currentThick = false;
@@ -7,10 +9,10 @@ let colors: string[] = ["black", "red", "green", "yellow","orange", "magenta", "
 let emojis: string[] = ["🌕", "🍤", "☄️"];
 let colorIndex: number = 0;
 let custom = prompt("Custom sticker text","🧽");
-let drawPositions = [];
+let drawPositions:object[] = [];
 let drawColors: number[] = [];
 let redoColors:number[] = [];
-let redoPositions = [];
+let redoPositions:object[] = [];
 let thickness: number[] = [];
 let redoThickness: number[] = [];
 
@@ -18,13 +20,13 @@ let size = 256;
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
 const canvas = document.getElementById("canvas");
-canvas.style.cursor = "none";
-const ctx = canvas.getContext("2d");
+canvas!.style.cursor = "none";
+const ctx = canvas!.getContext("2d");
 const Title = "Title";
 const header = document.createElement("h1");
 const degrees = document.querySelector("#degrees");
 const rotation = document.querySelector("#Rotation");
-rotation.value = 0;
+rotation!.value = 0;
 degrees.textContent = rotation.value;
 
 const clearButton = document.createElement("button");
@@ -84,8 +86,9 @@ interface displayObj {
 }
 
 interface StickerObj{
-    emojiType: number[]
-    emojiPositions: number[][];
+    //emojiType: number[]
+    emojiList: emoji[];
+    emojiRedos: emoji[];
     drag(changeX: number, changeY: number): void;
 }
 
@@ -98,13 +101,15 @@ interface selectTool{
 }
 
 const emojiSticker: StickerObj = {
-    emojiType: [],
-    emojiPositions: [],
+    //emojiType: [],
+    emojiList: [],
+    emojiRedos: [],
     drag(changeX, changeY){
         ctx.font = "32px monospace";
-        this.emojiPositions.push([changeX - 18, changeY + 10]);
-        this.emojiType.push(penTool.option - 1);
-        console.log("emoji pos: " + this.emojiPositions);
+        this.emojiList.push({x: changeX - 18, y: changeY + 10, e: penTool.option - 1});
+        //this.emojiType.push(penTool.option - 1);
+        drawPositions.push([]);
+        console.log("emoji pos: " + this.emojiList);
         //this.emojiPositions[penTool.option - 1] = [changeX - 18, changeY + 10];
     }
 }
@@ -150,8 +155,9 @@ clearButton.addEventListener("click", () => {
     drawColors = [];
     redoColors = [];
     thickness = [];
-    emojiSticker.emojiPositions = [];
-})
+    emojiSticker.emojiList = [];
+    emojiSticker.emojiRedos = [];
+    })
 
 customButton.addEventListener("click", () => {
     if(penTool.option != 4){
@@ -205,18 +211,26 @@ globalThis.addEventListener("tool-moved", () => {
 //functions borrowed from https://quant-paint.glitch.me/paint1.html 
 undoButton.addEventListener("click", () => {
     if (drawPositions.length > 0) {
-        redoPositions.push(drawPositions.pop());
-        redoThickness.push(thickness.pop());
-        redoColors.push(drawColors.pop());
+        redoPositions.push(drawPositions.pop()!);
+        redoThickness.push(thickness.pop()!);
+        redoColors.push(drawColors.pop()!);
+        dispatchEvent(changEvent);
+    }
+    if (drawPositions[drawPositions.length - 1] == []!){
+        emojiSticker.emojiRedos.push(emojiSticker.emojiList.pop()!);
         dispatchEvent(changEvent);
     }
 });
 
 redoButton.addEventListener("click", () => {
     if (redoPositions.length > 0) {
-        drawPositions.push(redoPositions.pop());
-        thickness.push(redoThickness.pop());
-        drawColors.push(redoColors.pop());
+        drawPositions.push(redoPositions.pop()!);
+        thickness.push(redoThickness.pop()!);
+        drawColors.push(redoColors.pop()!);
+        dispatchEvent(changEvent);
+    }
+    if (redoPositions[redoPositions.length - 1] == []!){
+        emojiSticker.emojiList.push(emojiSticker.emojiRedos.pop()!);
         dispatchEvent(changEvent);
     }
 });
@@ -246,9 +260,9 @@ function redraw(ctxParam: CanvasRenderingContext2D ) {
         }
       lineNum++;
     }
-    for (const positions of emojiSticker.emojiPositions){
-        ctxParam.fillText(emojis[emojiSticker.emojiType[emojiNum]], positions[0], positions[1]);
-        console.log("emoji: " + emojis[emojiSticker.emojiType[emojiNum]]);
+    for (const positions of emojiSticker.emojiList){
+        ctxParam.fillText(emojis[positions.e], positions.x, positions.y);
+        console.log("emoji: " + emojis[positions.e]);
         emojiNum++;
     }
     
