@@ -84,7 +84,7 @@ interface displayObj {
 }
 
 interface StickerObj{
-
+    emojiType: number[]
     emojiPositions: number[][];
     drag(changeX: number, changeY: number): void;
 }
@@ -98,10 +98,14 @@ interface selectTool{
 }
 
 const emojiSticker: StickerObj = {
-    emojiPositions: [[0,-2000],[0,-2000],[0,-2000],[0,-2000]],
+    emojiType: [],
+    emojiPositions: [],
     drag(changeX, changeY){
         ctx.font = "32px monospace";
-        this.emojiPositions[penTool.option - 1] = [changeX - 18, changeY + 10];
+        this.emojiPositions.push([changeX - 18, changeY + 10]);
+        this.emojiType.push(penTool.option - 1);
+        console.log("emoji pos: " + this.emojiPositions);
+        //this.emojiPositions[penTool.option - 1] = [changeX - 18, changeY + 10];
     }
 }
 
@@ -146,7 +150,7 @@ clearButton.addEventListener("click", () => {
     drawColors = [];
     redoColors = [];
     thickness = [];
-    emojiSticker.emojiPositions = [[0,-2000],[0,-2000],[0,-2000],[0,-2000]];
+    emojiSticker.emojiPositions = [];
 })
 
 customButton.addEventListener("click", () => {
@@ -220,16 +224,17 @@ redoButton.addEventListener("click", () => {
 function redraw(ctxParam: CanvasRenderingContext2D ) {
     ctxParam.clearRect(0, 0, size, size);
     ctxParam.fillRect(0,0,size, size);
-    console.log("size: " + size);
-    let n = 0;
+    //console.log("size: " + size);
+    let lineNum = 0;
+    let emojiNum = 0;
     
     if(colorIndex >= colors.length){
         colorIndex = 0;
     }
     
     for (const line of drawPositions) {
-        ctxParam.strokeStyle = colors[drawColors[n]];
-        ctxParam.lineWidth = thickness[n + 1];
+        ctxParam.strokeStyle = colors[drawColors[lineNum]];
+        ctxParam.lineWidth = thickness[lineNum + 1];
         if (line.length > 1) {
             ctxParam.beginPath();
             const { x, y } = line[0];
@@ -239,12 +244,14 @@ function redraw(ctxParam: CanvasRenderingContext2D ) {
             }
             ctxParam.stroke();
         }
-      n++;
+      lineNum++;
     }
-    ctxParam.fillText("🌕", emojiSticker.emojiPositions[0][0], emojiSticker.emojiPositions[0][1]);
-    ctxParam.fillText("🍤", emojiSticker.emojiPositions[1][0], emojiSticker.emojiPositions[1][1]);
-    ctxParam.fillText("☄️", emojiSticker.emojiPositions[2][0], emojiSticker.emojiPositions[2][1]);
-    ctxParam.fillText(custom, emojiSticker.emojiPositions[3][0], emojiSticker.emojiPositions[3][1]);
+    for (const positions of emojiSticker.emojiPositions){
+        ctxParam.fillText(emojis[emojiSticker.emojiType[emojiNum]], positions[0], positions[1]);
+        console.log("emoji: " + emojis[emojiSticker.emojiType[emojiNum]]);
+        emojiNum++;
+    }
+    
 }
 
 canvas.addEventListener("mousedown", (e) => {
