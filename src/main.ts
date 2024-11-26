@@ -76,7 +76,8 @@ ctx.fillRect(0, 0, size, size);
 document.title = Title;
 
 interface displayObj {
-    display(context : CanvasRenderingContext2D): void;
+    display(ctxParam : CanvasRenderingContext2D): void;
+    moveCursor(): void;
 }
 
 interface StickerObj{
@@ -89,7 +90,50 @@ interface selectTool{
     x: number;
     y: number;
     option: number;
-    moveCursor(): void;
+}
+
+const disp: displayObj = {
+    display(ctxParam : CanvasRenderingContext2D): void{
+        ctxParam.clearRect(0, 0, size, size);
+        ctxParam.fillRect(0,0,size, size);
+        let lineNum = 0;
+        let emojiNum = 0;
+        
+        if(colorIndex >= colors.length){
+            colorIndex = 0;
+        }
+        for (const line of drawPositions) {
+            ctxParam.strokeStyle = colors[drawPositions[lineNum].color];
+            if(drawPositions[lineNum] != undefined){
+                ctxParam.lineWidth = drawPositions[lineNum].thick;
+            }
+            if (line.pos.length > 1) {
+                ctxParam.beginPath();
+                const { x, y } = line.pos[0];
+                ctxParam.moveTo(x, y);
+                for (const { x, y } of line.pos) {
+                    ctxParam.lineTo(x, y);
+                }
+                ctxParam.stroke();
+            }
+        lineNum++;
+        }
+        for (const positions of emojiSticker.emojiList){
+            ctxParam.fillText(emojis[positions.e], positions.x, positions.y);
+            emojiNum++;
+        }
+    },
+    moveCursor() {
+        disp.display(ctx);
+        ctx.beginPath();
+        ctx.font = "32px monospace";
+        if(penTool.option > 0){
+            ctx.fillText(emojis[penTool.option - 1], penTool.x - 18, penTool.y + 10);
+        }else{
+            ctx.arc(penTool.x, penTool.y, 1, 0, 2 * Math.PI);
+        }
+        ctx.stroke();
+    },
 }
 
 const emojiSticker: StickerObj = {
@@ -106,18 +150,6 @@ const penTool: selectTool = {
     x: 0, 
     y: 0,
     option: 0,
-
-    moveCursor(){
-        redraw(ctx);
-        ctx.beginPath();
-        ctx.font = "32px monospace";
-        if(this.option > 0){
-            ctx.fillText(emojis[this.option - 1], penTool.x - 18, penTool.y + 10);
-        }else{
-            ctx.arc(penTool.x, penTool.y, 1, 0, 2 * Math.PI);
-        }
-        ctx.stroke();
-    }
 }
 
 thinButton.addEventListener("click", () => {
@@ -143,7 +175,7 @@ exportButton.addEventListener("click", () => {
     size *= 4;
     const tempCanvas = document.getElementById("canvas");
     const tempCtx = tempCanvas!.getContext("2d");
-    redraw(tempCtx);
+    disp.display(tempCtx);
     const anchor = document.createElement('a');
     anchor.href = tempCanvas!.toDataURL("image/png");
     anchor.download = 'drawing.png';
@@ -163,7 +195,7 @@ rotation!.addEventListener("input", (e) =>{
 });
 
 canvas!.addEventListener("mouseleave", () => {
-    redraw(ctx);
+    disp.display(ctx);
 })
 
 //functions borrowed from https://quant-paint.glitch.me/paint1.html 
@@ -190,45 +222,13 @@ redoButton.addEventListener("click", () => {
 });
 
 globalThis.addEventListener("drawing-changed", () => {
-    redraw(ctx);
+    disp.display(ctx);
 })
 
 globalThis.addEventListener("tool-moved", () => {
     ctx.lineWidth = currentThick;
-    penTool.moveCursor();
+    disp.moveCursor();
 })
-
-function redraw(ctxParam: CanvasRenderingContext2D ) {
-    ctxParam.clearRect(0, 0, size, size);
-    ctxParam.fillRect(0,0,size, size);
-    let lineNum = 0;
-    let emojiNum = 0;
-    
-    if(colorIndex >= colors.length){
-        colorIndex = 0;
-    }
-    
-    for (const line of drawPositions) {
-        ctxParam.strokeStyle = colors[drawPositions[lineNum].color];
-        if(drawPositions[lineNum] != undefined){
-            ctxParam.lineWidth = drawPositions[lineNum].thick;
-        }
-        if (line.pos.length > 1) {
-            ctxParam.beginPath();
-            const { x, y } = line.pos[0];
-            ctxParam.moveTo(x, y);
-            for (const { x, y } of line.pos) {
-                ctxParam.lineTo(x, y);
-            }
-            ctxParam.stroke();
-        }
-      lineNum++;
-    }
-    for (const positions of emojiSticker.emojiList){
-        ctxParam.fillText(emojis[positions.e], positions.x, positions.y);
-        emojiNum++;
-    }
-}
 
 canvas!.addEventListener("mousedown", (e) => {
     dispatchEvent(toolMoved);
