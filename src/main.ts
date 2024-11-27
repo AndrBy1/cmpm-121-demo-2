@@ -20,7 +20,7 @@ const app = document.querySelector<HTMLDivElement>("#app")!;
 const canvas = document.getElementById("canvas");
 canvas!.style.cursor = "none";
 const ctx = canvas!.getContext("2d");
-const Title = "Title";
+const Title = "Draw";
 const header = document.createElement("h1");
 const degrees = document.querySelector("#degrees");
 const rotation = document.querySelector("#Rotation");
@@ -155,7 +155,7 @@ const penTool: selectTool = {
 }
 
 thinButton.addEventListener("click", () => {
-    currentThick = 1;
+    currentThick = 2;
     penTool.option = 0;
 })
 
