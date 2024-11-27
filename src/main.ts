@@ -130,11 +130,8 @@ const disp: displayObj = {
         if(penTool.option > 0){
             ctx.fillText(emojis[penTool.option - 1], penTool.x - 18, penTool.y + 10);
         }else{
-<<<<<<< HEAD
-=======
             ctx.strokeStyle = colors[colorIndex];
             ctx.lineWidth = currentThick
->>>>>>> 5d1e8a1 (preview cursor shows accurate line width)
             ctx.arc(penTool.x, penTool.y, 1, 0, 2 * Math.PI);
         }
         ctx.stroke();
@@ -231,18 +228,11 @@ globalThis.addEventListener("drawing-changed", () => {
 })
 
 globalThis.addEventListener("tool-moved", () => {
-<<<<<<< HEAD
-    ctx.lineWidth = currentThick;
-    disp.moveCursor();
-})
-
-=======
     disp.moveCursor();
 })
 
 
 
->>>>>>> 5d1e8a1 (preview cursor shows accurate line width)
 canvas!.addEventListener("mousedown", (e) => {
     dispatchEvent(toolMoved);
     penTool.x = e.offsetX;
