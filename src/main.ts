@@ -10,14 +10,13 @@ let currentThick = 1;
 const colors: string[] = ["black", "red", "green", "yellow","orange", "magenta", "cyan", "white", "gray"];
 const emojis: string[] = ["🌕", "🍤", "☄️"];
 let colorIndex: number = 0;
-const custom = prompt("Custom sticker text","🧽");
 let drawPositions:pen[] = [];
 let redoPositions:pen[] = [];
 
-let size = 256;
+const size = 256;
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
-const canvas = document.getElementById("canvas");
+const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 canvas!.style.cursor = "none";
 const ctx = canvas!.getContext("2d");
 const Title = "Draw";
@@ -32,6 +31,8 @@ const undoButton = document.createElement("button");
 const redoButton = document.createElement("button");
 const thinButton = document.createElement("button");
 const thickButton = document.createElement("button");
+const exportButton = document.createElement("button");
+const addCustomButton = document.createElement("button");
 clearButton.textContent = "Clear";
 app.append(clearButton);
 undoButton.textContent = "Undo";
@@ -42,7 +43,10 @@ thinButton.textContent = "Thin";
 app.append(thinButton);
 thickButton.textContent = "Thick";
 app.append(thickButton);
-emojis.push(custom!);
+exportButton.textContent = "Export";
+app.append(exportButton);
+addCustomButton.textContent = "Add New Emoji";
+app.append(addCustomButton);
 
 function createEmoteButton(num: number){
     const button= document.createElement("button");
@@ -60,18 +64,14 @@ function createEmoteButton(num: number){
 createEmoteButton(1);
 createEmoteButton(2);
 createEmoteButton(3);
-createEmoteButton(4);
-const exportButton = document.createElement("button");
-exportButton.textContent = "export";
-app.append(exportButton);
 
 const changEvent = new Event("drawing-changed");
 const toolMoved = new Event("tool-moved");
 
 header.innerHTML = Title;
 
-ctx.fillStyle = "blue";
-ctx.fillRect(0, 0, size, size);
+ctx!.fillStyle = "blue";
+ctx!.fillRect(0, 0, size, size);
 
 document.title = Title;
 
@@ -124,17 +124,17 @@ const disp: displayObj = {
         }
     },
     moveCursor() {
-        disp.display(ctx);
-        ctx.beginPath();
-        ctx.font = "32px monospace";
+        disp.display(ctx!);
+        ctx!.beginPath();
+        ctx!.font = "32px monospace";
         if(penTool.option > 0){
-            ctx.fillText(emojis[penTool.option - 1], penTool.x - 18, penTool.y + 10);
+            ctx!.fillText(emojis[penTool.option - 1], penTool.x - 18, penTool.y + 10);
         }else{
-            ctx.strokeStyle = colors[colorIndex];
-            ctx.lineWidth = currentThick
-            ctx.arc(penTool.x, penTool.y, 1, 0, 2 * Math.PI);
+            ctx!.strokeStyle = colors[colorIndex];
+            ctx!.lineWidth = currentThick
+            ctx!.arc(penTool.x, penTool.y, 1, 0, 2 * Math.PI);
         }
-        ctx.stroke();
+        ctx!.stroke();
     },
 }
 
@@ -142,7 +142,7 @@ const emojiSticker: StickerObj = {
     emojiList: [],
     emojiRedos: [],
     drag(changeX, changeY){
-        ctx.font = "32px monospace";
+        ctx!.font = "32px monospace";
         this.emojiList.push({x: changeX - 18, y: changeY + 10, e: penTool.option - 1});
         drawPositions.push({pos: [], color: 0, thick: 0});
     }
@@ -165,8 +165,8 @@ thickButton.addEventListener("click", () => {
 })
 
 clearButton.addEventListener("click", () => {
-    ctx.clearRect(0,0,size,size);
-    ctx.fillRect(0, 0, size, size);
+    ctx!.clearRect(0,0,size,size);
+    ctx!.fillRect(0, 0, size, size);
     drawPositions = [];
     redoPositions = [];
     emojiSticker.emojiList = [];
@@ -174,30 +174,35 @@ clearButton.addEventListener("click", () => {
     })
 
 exportButton.addEventListener("click", () => {
-    size *= 4;
-    const tempCanvas = document.getElementById("canvas");
+    const tempCanvas = document.getElementById("canvas") as HTMLCanvasElement;
+    
     const tempCtx = tempCanvas!.getContext("2d");
-    disp.display(tempCtx);
+    disp.display(tempCtx!);
     const anchor = document.createElement('a');
     anchor.href = tempCanvas!.toDataURL("image/png");
     anchor.download = 'drawing.png';
     anchor.click();
-    size /= 4;
+})
+
+addCustomButton.addEventListener("click", () => {
+    const custom = prompt("Custom sticker text","🧽");
+    emojis.push(custom!);
+    createEmoteButton(emojis.length);
 })
 
 rotation!.addEventListener("input", (e) =>{
     degrees!.textContent = e.target!.value;
     if (penTool.option > 0){
         canvas!.addEventListener("mousedown", () => {
-            ctx.translate(penTool.x, penTool.y);
-            ctx.rotate((e.target!.value * Math.PI) / 180);
-            ctx.translate(-penTool.x, -penTool.y);
+            ctx!.translate(penTool.x, penTool.y);
+            ctx!.rotate((e.target!.value * Math.PI) / 180);
+            ctx!.translate(-penTool.x, -penTool.y);
         })
     }
 });
 
 canvas!.addEventListener("mouseleave", () => {
-    disp.display(ctx);
+    disp.display(ctx!);
 })
 
 //functions borrowed from https://quant-paint.glitch.me/paint1.html 
@@ -224,7 +229,7 @@ redoButton.addEventListener("click", () => {
 });
 
 globalThis.addEventListener("drawing-changed", () => {
-    disp.display(ctx);
+    disp.display(ctx!);
 })
 
 globalThis.addEventListener("tool-moved", () => {
