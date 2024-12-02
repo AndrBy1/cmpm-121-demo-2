@@ -97,6 +97,7 @@ const disp: displayObj = {
         ctxParam.fillRect(0,0,dispSize, dispSize);
         let lineNum = 0;
         let emojiNum = 0;
+        const scale = dispSize/size;
         
         if(colorIndex >= colors.length){
             colorIndex = 0;
@@ -104,13 +105,17 @@ const disp: displayObj = {
         for (const line of drawPositions) {
             ctxParam.strokeStyle = colors[drawPositions[lineNum].color];
             if(drawPositions[lineNum] != undefined){
-                ctxParam.lineWidth = drawPositions[lineNum].thick;
+                ctxParam.lineWidth = drawPositions[lineNum].thick * scale;
             }
             if (line.pos.length > 1) {
                 ctxParam.beginPath();
-                const { x, y } = line.pos[0];
+                let { x, y } = line.pos[0];
+                x *= scale;
+                y *= scale;
                 ctxParam.moveTo(x, y);
-                for (const { x, y } of line.pos) {
+                for (let { x, y } of line.pos) {
+                    x *= scale;
+                    y *= scale;
                     ctxParam.lineTo(x, y);
                 }
                 ctxParam.stroke();
@@ -118,7 +123,9 @@ const disp: displayObj = {
         lineNum++;
         }
         for (const positions of emojiSticker.emojiList){
-            ctxParam.fillText(emojis[positions.e], positions.x, positions.y);
+            ctxParam.font = scale * 32 + "px monospace";
+            ctxParam.fillText(emojis[positions.e], positions.x * scale, positions.y * scale);
+            //console.log("default: " + JSON.stringify(positions) + "scaled: " + positions.x + ", " + positions.y);
             emojiNum++;
         }
     },
@@ -258,7 +265,6 @@ canvas!.addEventListener("mousedown", (e) => {
 canvas!.addEventListener("mousemove", (e) => {
     penTool.x = e.offsetX;
     penTool.y = e.offsetY;
-    
     dispatchEvent(toolMoved);
     if (isDraw) {
         thisLine.push({x: penTool.x, y: penTool.y})
