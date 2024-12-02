@@ -7,7 +7,7 @@ type pen = {pos: position[], color: number, thick: number};
 let isDraw = false;
 let thisLine: position[] = [];
 let currentThick = 1;
-const colors: string[] = ["black", "red", "green", "yellow","orange", "magenta", "cyan", "white", "gray"];
+const colors: string[] = ["blue", "red", "green", "yellow","orange", "magenta", "cyan", "white", "gray"];
 const emojis: string[] = ["🌕", "🍤", "☄️"];
 let colorIndex: number = 0;
 let drawPositions:pen[] = [];
@@ -70,13 +70,12 @@ const toolMoved = new Event("tool-moved");
 
 header.innerHTML = Title;
 
-ctx!.fillStyle = "blue";
 ctx!.fillRect(0, 0, size, size);
 
 document.title = Title;
 
 interface displayObj {
-    display(ctxParam : CanvasRenderingContext2D): void;
+    display(ctxParam : CanvasRenderingContext2D, dispSize: number): void;
     moveCursor(): void;
 }
 
@@ -93,9 +92,9 @@ interface selectTool{
 }
 
 const disp: displayObj = {
-    display(ctxParam : CanvasRenderingContext2D): void{
-        ctxParam.clearRect(0, 0, size, size);
-        ctxParam.fillRect(0,0,size, size);
+    display(ctxParam : CanvasRenderingContext2D, dispSize: number): void{
+        ctxParam.clearRect(0, 0, dispSize, dispSize);
+        ctxParam.fillRect(0,0,dispSize, dispSize);
         let lineNum = 0;
         let emojiNum = 0;
         
@@ -124,7 +123,7 @@ const disp: displayObj = {
         }
     },
     moveCursor() {
-        disp.display(ctx!);
+        disp.display(ctx!, size);
         ctx!.beginPath();
         ctx!.font = "32px monospace";
         if(penTool.option > 0){
@@ -175,13 +174,16 @@ clearButton.addEventListener("click", () => {
 
 exportButton.addEventListener("click", () => {
     const tempCanvas = document.getElementById("canvas") as HTMLCanvasElement;
-    
+    tempCanvas.width = size * 4;
+    tempCanvas.height = size * 4;
     const tempCtx = tempCanvas!.getContext("2d");
-    disp.display(tempCtx!);
+    disp.display(tempCtx!, size * 4);
     const anchor = document.createElement('a');
     anchor.href = tempCanvas!.toDataURL("image/png");
     anchor.download = 'drawing.png';
     anchor.click();
+    tempCanvas.width = size;
+    tempCanvas.height = size;
 })
 
 addCustomButton.addEventListener("click", () => {
@@ -202,7 +204,7 @@ rotation!.addEventListener("input", (e) =>{
 });
 
 canvas!.addEventListener("mouseleave", () => {
-    disp.display(ctx!);
+    disp.display(ctx!, size);
 })
 
 //functions borrowed from https://quant-paint.glitch.me/paint1.html 
@@ -229,14 +231,12 @@ redoButton.addEventListener("click", () => {
 });
 
 globalThis.addEventListener("drawing-changed", () => {
-    disp.display(ctx!);
+    disp.display(ctx!, size);
 })
 
 globalThis.addEventListener("tool-moved", () => {
     disp.moveCursor();
 })
-
-
 
 canvas!.addEventListener("mousedown", (e) => {
     dispatchEvent(toolMoved);
